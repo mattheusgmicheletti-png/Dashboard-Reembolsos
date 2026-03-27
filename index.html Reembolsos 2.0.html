@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<!-- saved from url=(0086)file:///C:/Users/mattheus.gmicheletti/Downloads/Dashboard_Reembolsos_COLABORATIVO.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Editável de Reembolsos</title>
+  <script src="./Dashboard Editável de Reembolsos 2.0_files/chart.umd.min.js.download"></script>
+  <script src="./Dashboard Editável de Reembolsos 2.0_files/xlsx.full.min.js.download"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #182233;
+      --line: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --blue: #3b82f6;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); }
+    .header {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      padding: 28px 32px 20px;
+      border-bottom: 2px solid #1e40af;
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    }
+    .header .icon { font-size: 2.3rem; }
+    .header h1 { font-size: 1.8rem; color: #fff; }
+    .header p { color: #93c5fd; margin-top: 4px; }
+    .pill { margin-left: auto; background: #1e40af; color: #dbeafe; padding: 8px 14px; border-radius: 999px; font-size: .82rem; font-weight: 700; }
+    .container { padding: 22px 32px 36px; display: grid; gap: 18px; }
+    .card { background: var(--panel); border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+    .section-title { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+    .toolbar { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr auto auto auto; gap: 12px; align-items: end; }
+    .toolbar .field, .form-grid .field { display: grid; gap: 6px; }
+    label { font-size: .8rem; color: var(--muted); }
+    input, select, button, textarea {
+      width: 100%; border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+      border-radius: 10px; padding: 10px 12px; font: inherit;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    button { cursor: pointer; font-weight: 700; transition: .15s ease; }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .btn-secondary { background: #243244; }
+    .btn-danger { background: #7f1d1d; border-color: #991b1b; }
+    .btn-ghost { background: transparent; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi { background: var(--panel); border-radius: 16px; padding: 18px; border-left: 4px solid var(--blue); }
+    .kpi:nth-child(2) { border-color: var(--amber); }
+    .kpi:nth-child(3) { border-color: var(--green); }
+    .kpi:nth-child(4) { border-color: var(--rose); }
+    .kpi .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .kpi .value { font-size: 1.9rem; font-weight: 800; margin: 8px 0 4px; }
+    .kpi .sub { color: #7dd3fc; font-size: .82rem; }
+    .grid-2 { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; }
+    .grid-2-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    canvas { max-height: 320px; }
+    .form-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-actions { display: flex; gap: 10px; margin-top: 12px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1180px; font-size: .84rem; }
+    th, td { padding: 7px 8px; border-bottom: 1px solid #243244; text-align: left; vertical-align: top; line-height: 1.25; }
+    th { position: sticky; top: 0; background: #162132; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; z-index: 1; white-space: nowrap; }
+    tbody tr:hover { background: #233247; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #1e3a8a; color: #bfdbfe; font-size: .68rem; font-weight: 700; white-space: nowrap; }
+    .obs { max-width: 180px; white-space: normal; color: #cbd5e1; }
+    .actions { display: flex; gap: 6px; }
+    .actions button { padding: 7px 9px; font-size: .74rem; white-space: nowrap; }
+    .small { font-size: .78rem; color: var(--muted); }
+    .footer { padding: 0 32px 26px; color: #64748b; font-size: .78rem; }
+    @media (max-width: 1100px) {
+      .toolbar, .form-grid, .kpis, .grid-2, .grid-2-eq { grid-template-columns: 1fr; }
+      .pill { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="icon">📊</div>
+    <div>
+      <h1>Dashboard Editável de Reembolsos</h1>
+      <p>Com base detalhada, observações, filtros, edição manual, matrícula, função e controle de solicitação antecipada.</p>
+    </div>
+    <div class="pill" id="statusBase">Base ativa: 50 lançamentos</div>
+    <button class="btn-ghost" id="btnConfigurar" title="Configurar sincronização com Google Sheets" style="margin-left:auto;background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.82rem;">☁️ Configurar Nuvem</button>
+    <button class="btn-ghost" id="btnSincronizar" title="Sincronizar agora" style="background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.82rem;">🔄 Sincronizar</button>
+  </div>
+  <div style="text-align: center; padding: 4px 24px 0px; font-size: 0.78rem; color: rgb(34, 197, 94);" id="syncStatus">✅ Sincronizado — 08:54:26</div>
+
+  <!-- MODAL: Configuração da URL do Google Apps Script -->
+  <div id="modalConfig" style="display: none; position: fixed; inset: 0px; background: rgba(0, 0, 0, 0.7); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:32px;max-width:560px;width:90%;box-shadow:0 25px 50px rgba(0,0,0,.5);">
+      <h2 style="color:#e2e8f0;font-size:1.2rem;margin-bottom:8px;">☁️ Configurar Sincronização com Google Sheets</h2>
+      <p style="color:#94a3b8;font-size:.84rem;margin-bottom:20px;line-height:1.6;">
+        Cole abaixo a URL do seu <strong style="color:#93c5fd">Google Apps Script</strong> implantado como Aplicativo da Web.<br>
+        Isso permite que <strong style="color:#93c5fd">várias pessoas</strong> acessem e editem os mesmos dados em tempo real.
+      </p>
+      <label style="color:#94a3b8;font-size:.82rem;display:block;margin-bottom:6px;">URL do Apps Script (Web App URL):</label>
+      <input id="inputGasUrl" type="url" placeholder="https://script.google.com/macros/s/XXXXXX/exec" style="width:100%;padding:10px 14px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#e2e8f0;font-size:.9rem;margin-bottom:20px;outline:none;">
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button id="btnFecharModal" style="padding:8px 20px;background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:8px;cursor:pointer;">Cancelar</button>
+        <button id="btnSalvarConfig" style="padding:8px 20px;background:#3b82f6;border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;">✅ Conectar</button>
+      </div>
+      <hr style="border-color:#334155;margin:20px 0;">
+      <details style="color:#94a3b8;font-size:.78rem;" open="">
+        <summary style="cursor:pointer;color:#60a5fa;font-weight:600;">📋 Como configurar (passo a passo)</summary>
+        <ol style="margin-top:12px;line-height:2;padding-left:18px;">
+          <li>Acesse <a href="https://sheets.google.com/" target="_blank" style="color:#60a5fa">sheets.google.com</a> e crie uma planilha nova</li>
+          <li>Clique em <strong>Extensões &gt; Apps Script</strong></li>
+          <li>Apague o código existente e cole o conteúdo do arquivo <code>gas_backend.gs</code></li>
+          <li>Clique em <strong>Implantar &gt; Nova implantação</strong></li>
+          <li>Tipo: <strong>Aplicativo da Web</strong> | Executar como: <strong>Eu</strong> | Acesso: <strong>Qualquer pessoa</strong></li>
+          <li>Copie a URL gerada e cole no campo acima</li>
+          <li>Compartilhe o arquivo HTML com sua equipe — todos usarão a mesma URL</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="section-title">Controles</div>
+      <div class="toolbar">
+        <div class="field">
+          <label>Buscar em qualquer campo</label>
+          <input id="searchInput" placeholder="Ex.: combustível, Petmax, observação...">
+        </div>
+        <div class="field">
+          <label>Filtrar obra</label>
+          <select id="filterObra"><option value="">Todos</option><option value="CIT Uel">CIT Uel</option><option value="Eletrofrio">Eletrofrio</option><option value="Granja Shida">Granja Shida</option><option value="Klabin Lagoas">Klabin Lagoas</option><option value="Petmax">Petmax</option><option value="Premier Pet">Premier Pet</option></select>
+        </div>
+        <div class="field">
+          <label>Filtrar motivo</label>
+          <select id="filterMotivo"><option value="">Todos</option><option value="Alimentação">Alimentação</option><option value="Café da manhã">Café da manhã</option><option value="Combustível">Combustível</option><option value="Pneu">Pneu</option><option value="Refeição">Refeição</option><option value="Roupa de Cama">Roupa de Cama</option><option value="Transporte">Transporte</option><option value="Uber">Uber</option><option value="VT">VT</option></select>
+        </div>
+        <div class="field">
+          <label>Filtrar colaborador</label>
+          <select id="filterColaborador"><option value="">Todos</option><option value="Alexandre Luiz Nascimento">Alexandre Luiz Nascimento</option><option value="Allan Rodrigo Cunha">Allan Rodrigo Cunha</option><option value="Carlos Antonio Candido Junior">Carlos Antonio Candido Junior</option><option value="Carlos Gilberto Gomes">Carlos Gilberto Gomes</option><option value="Carlos Santos Furtados">Carlos Santos Furtados</option><option value="Daniel Lima Nascimento">Daniel Lima Nascimento</option><option value="Daniel Pederiva">Daniel Pederiva</option><option value="Edson Dominciano Correa Filho">Edson Dominciano Correa Filho</option><option value="Elenilton Ribeiro">Elenilton Ribeiro</option><option value="Evaristo Rafael Rodrigues">Evaristo Rafael Rodrigues</option><option value="Francisco Olegario Marques">Francisco Olegario Marques</option><option value="Francivaldo Marques de Aguiar">Francivaldo Marques de Aguiar</option><option value="Genildo Batista de Medeiros">Genildo Batista de Medeiros</option><option value="Jaciel Melo Araujo">Jaciel Melo Araujo</option><option value="Leonardo Aparecido da Silva">Leonardo Aparecido da Silva</option><option value="Leonardo Pederiva dos Santos">Leonardo Pederiva dos Santos</option><option value="Marilene Santana">Marilene Santana</option><option value="Messias Francisco de Lima">Messias Francisco de Lima</option><option value="Rafael de Moura">Rafael de Moura</option><option value="Raimundo Lelis Boas">Raimundo Lelis Boas</option><option value="Raimundo Nonato Vieira Gonçalves">Raimundo Nonato Vieira Gonçalves</option><option value="Sidnei Silva de Souza">Sidnei Silva de Souza</option><option value="Silvio Alves Sena">Silvio Alves Sena</option><option value="Valdinei Castorino Costa">Valdinei Castorino Costa</option><option value="Victor Hugo dos Santos Macedo">Victor Hugo dos Santos Macedo</option></select>
+        </div>
+        <div class="field">
+          <label>Importar Excel/CSV</label>
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+        </div>
+        <button class="btn-secondary" id="btnExportCsv">Exportar CSV</button>
+        <button class="btn-ghost" id="btnReset">Restaurar base inicial</button>
+      </div>
+      <div class="small" style="margin-top:10px;">Ao importar uma nova planilha ou editar os lançamentos na própria tela, os gráficos e KPIs atualizam imediatamente. Os dados editados também ficam salvos no navegador deste computador.</div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label">Total reembolsado</div>
+        <div class="value" id="kpiTotal">R$&nbsp;4.612,50</div>
+        <div class="sub" id="kpiTotalSub">50 lançamentos filtrados</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Obra líder</div>
+        <div class="value" id="kpiObra">Petmax</div>
+        <div class="sub" id="kpiObraSub">R$&nbsp;1.745,99 · 20 lançamentos</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Motivo líder</div>
+        <div class="value" id="kpiMotivo">Combustível</div>
+        <div class="sub" id="kpiMotivoSub">R$&nbsp;2.410,92 · 18 lançamentos</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Ticket médio</div>
+        <div class="value" id="kpiTicket">R$&nbsp;92,25</div>
+        <div class="sub">por lançamento</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title">Total por obra</div>
+        <canvas id="chartObras" width="1182" height="320" style="display: block; box-sizing: border-box; height: 320px; width: 1182px;"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-title">Distribuição por motivo</div>
+        <canvas id="chartMotivos" width="1182" height="320" style="display: block; box-sizing: border-box; height: 320px; width: 1182px;"></canvas>
+      </div>
+    </div>
+
+    <div class="grid-2-eq">
+      <div class="card">
+        <div class="section-title">Evolução mensal</div>
+        <canvas id="chartEvolucao" width="1182" height="320" style="display: block; box-sizing: border-box; height: 320px; width: 1182px;"></canvas>
+      </div>
+      <div class="card">
+        <div class="section-title">Top colaboradores</div>
+        <canvas id="chartColabs" width="1182" height="320" style="display: block; box-sizing: border-box; height: 320px; width: 1182px;"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Lançamento manual / edição</div>
+      <div class="form-grid">
+        <div class="field"><label>Obra</label><input id="fObra"></div>
+        <div class="field"><label>Data</label><input id="fData" type="date"></div>
+        <div class="field"><label>Colaborador</label><input id="fColaborador"></div>
+        <div class="field"><label>Matrícula</label><input id="fMatricula"></div>
+        <div class="field"><label>Função</label><input id="fFuncao"></div>
+        <div class="field"><label>Motivo</label><input id="fMotivo"></div>
+        <div class="field"><label>Fornecedor</label><input id="fFornecedor"></div>
+        <div class="field"><label>Valor</label><input id="fValor" type="number" step="0.01"></div>
+        <div class="field"><label>Solicitado antecipadamente?</label><select id="fAntecipado"><option value="">Não informado</option><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+        <div class="field full"><label>Observação</label><textarea id="fObs" placeholder="Justificativa, detalhes do gasto, etc."></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" id="btnSalvar">Salvar lançamento</button>
+        <button class="btn-secondary" id="btnNovo">Novo / limpar formulário</button>
+      </div>
+      <div class="small" id="editHint" style="margin-top:8px;">Nenhum registro em edição.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Base detalhada</div>
+      <div class="small" style="margin-bottom:10px;">Aqui o gerente consegue ver a base bruta, inclusive as observações. Você pode editar ou excluir qualquer linha.</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Obra</th>
+              <th>Data</th>
+              <th>Colaborador</th>
+              <th>Matrícula</th>
+              <th>Função</th>
+              <th>Motivo</th>
+              <th>Fornecedor</th>
+              <th>Observação</th>
+              <th>Solic. antecipada?</th>
+              <th>Valor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"><tr><td>1</td><td>Premier Pet</td><td>Tue Mar 17</td>
+          <td>Daniel Pederiva</td><td></td><td></td>
+          <td>Transporte</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Taxi em folga de campo, Wellington e Jose Alves SJRP X SALES SP</td>
+          <td></td><td>R$&nbsp;220,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxi-ol2vhb">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxi-ol2vhb">🗑️</button></td></tr><tr><td>2</td><td>CIT Uel</td><td>Sat Feb 21</td>
+          <td>Edson Dominciano Correa Filho</td><td></td><td></td>
+          <td>Café da manhã</td><td>Flor do Minho</td>
+          <td style="max-width:220px;word-break:break-word">Café da manhã obra - sábado</td>
+          <td></td><td>R$&nbsp;42,06</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-twtl1a">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-twtl1a">🗑️</button></td></tr><tr><td>3</td><td>Eletrofrio</td><td>Sat Feb 28</td>
+          <td>Francivaldo Marques de Aguiar</td><td></td><td></td>
+          <td>Combustível</td><td>Dias Auto Posto</td>
+          <td style="max-width:220px;word-break:break-word">Abastecimento referente a folga de campo (carro empresa)</td>
+          <td></td><td>R$&nbsp;300,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-lri3rs">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-lri3rs">🗑️</button></td></tr><tr><td>4</td><td>Eletrofrio</td><td>Mon Mar 02</td>
+          <td>Francivaldo Marques de Aguiar</td><td></td><td></td>
+          <td>Combustível</td><td>Lava Car do Farol</td>
+          <td style="max-width:220px;word-break:break-word">Lava rápido (Carro empresa)</td>
+          <td></td><td>R$&nbsp;50,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-3hhyqh">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-3hhyqh">🗑️</button></td></tr><tr><td>5</td><td>Eletrofrio</td><td>Tue Mar 03</td>
+          <td>Francivaldo Marques de Aguiar</td><td></td><td></td>
+          <td>Combustível</td><td>Petroreis</td>
+          <td style="max-width:220px;word-break:break-word">Abastecimento referente a folga de campo (carro empresa)</td>
+          <td></td><td>R$&nbsp;150,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-nvzoj6">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-nvzoj6">🗑️</button></td></tr><tr><td>6</td><td>Premier Pet</td><td>Tue Mar 17</td>
+          <td>Carlos Gilberto Gomes</td><td></td><td></td>
+          <td>Combustível</td><td>Posto Boeing Ltda</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;100,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-xh3d1k">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-xh3d1k">🗑️</button></td></tr><tr><td>7</td><td>Eletrofrio</td><td>Fri Feb 20</td>
+          <td>Leonardo Aparecido da Silva</td><td></td><td></td>
+          <td>Pneu</td><td>Borracharia e Auto Center Martins</td>
+          <td style="max-width:220px;word-break:break-word">Concerto Pneu furado</td>
+          <td></td><td>R$&nbsp;25,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-p23spw">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-p23spw">🗑️</button></td></tr><tr><td>8</td><td>Eletrofrio</td><td>Sun Feb 22</td>
+          <td>Leonardo Aparecido da Silva</td><td></td><td></td>
+          <td>Combustível</td><td>Auto Posto Ecos</td>
+          <td style="max-width:220px;word-break:break-word">Abastecimento referente a folga de campo (carro empresa)</td>
+          <td></td><td>R$&nbsp;231,69</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-jzd27y">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-jzd27y">🗑️</button></td></tr><tr><td>9</td><td>Eletrofrio</td><td>Mon Mar 02</td>
+          <td>Leonardo Aparecido da Silva</td><td></td><td></td>
+          <td>Roupa de Cama</td><td>Daju Ltda</td>
+          <td style="max-width:220px;word-break:break-word">Compra de Roupa de cama para alojamento</td>
+          <td></td><td>R$&nbsp;39,99</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-zk6u7l">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-zk6u7l">🗑️</button></td></tr><tr><td>10</td><td>Eletrofrio</td><td>Sun Mar 08</td>
+          <td>Leonardo Aparecido da Silva</td><td></td><td></td>
+          <td>Pneu</td><td>Eletrica Carlão Vulcanizadora</td>
+          <td style="max-width:220px;word-break:break-word">Concerto Pneu furado</td>
+          <td></td><td>R$&nbsp;20,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-xfo8cc">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-xfo8cc">🗑️</button></td></tr><tr><td>11</td><td>Premier Pet</td><td>Fri Feb 27</td>
+          <td>Messias Francisco de Lima</td><td></td><td></td>
+          <td>Combustível</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;160,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-6omlol">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-6omlol">🗑️</button></td></tr><tr><td>12</td><td>Premier Pet</td><td>Tue Mar 03</td>
+          <td>Messias Francisco de Lima</td><td></td><td></td>
+          <td>Transporte</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Taxi em folga de campo, Ponta Grossa x Porto Amazonas</td>
+          <td></td><td>R$&nbsp;250,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-rfor11">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-rfor11">🗑️</button></td></tr><tr><td>13</td><td>Klabin Lagoas</td><td>Thu Mar 12</td>
+          <td>Marilene Santana</td><td></td><td></td>
+          <td>VT</td><td>Viação Vinsa</td>
+          <td style="max-width:220px;word-break:break-word">Despesa de custo de vale transporte</td>
+          <td></td><td>R$&nbsp;30,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-ttj92e">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-ttj92e">🗑️</button></td></tr><tr><td>14</td><td>Petmax</td><td>Sat Dec 20</td>
+          <td>Alexandre Luiz Nascimento</td><td></td><td></td>
+          <td>Combustível</td><td>Auto Posto Jatay</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;150,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-wfcdpc">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-wfcdpc">🗑️</button></td></tr><tr><td>15</td><td>Petmax</td><td>Wed Feb 18</td>
+          <td>Sidnei Silva de Souza</td><td></td><td></td>
+          <td>Refeição</td><td>Restaurante Gaucho Gente Boa</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;35,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-3tfwwp">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-3tfwwp">🗑️</button></td></tr><tr><td>16</td><td>Petmax</td><td>Fri Feb 06</td>
+          <td>Allan Rodrigo Cunha</td><td></td><td></td>
+          <td>Combustível</td><td>Auto Posto Moreirão</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;150,06</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-41n2io">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-41n2io">🗑️</button></td></tr><tr><td>17</td><td>Petmax</td><td>Mon Feb 09</td>
+          <td>Allan Rodrigo Cunha</td><td></td><td></td>
+          <td>Combustível</td><td>Auto Posto Moreirão</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;200,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-azgd7f">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-azgd7f">🗑️</button></td></tr><tr><td>18</td><td>Petmax</td><td>Mon Feb 02</td>
+          <td>Daniel Lima Nascimento</td><td></td><td></td>
+          <td>Refeição</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;41,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-hbetax">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-hbetax">🗑️</button></td></tr><tr><td>19</td><td>Petmax</td><td>Mon Feb 02</td>
+          <td>Daniel Lima Nascimento</td><td></td><td></td>
+          <td>Uber</td><td>Uber</td>
+          <td style="max-width:220px;word-break:break-word">Trajeto Telemaco X Imbau</td>
+          <td></td><td>R$&nbsp;70,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-xos1lx">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-xos1lx">🗑️</button></td></tr><tr><td>20</td><td>Petmax</td><td>Tue Feb 03</td>
+          <td>Daniel Lima Nascimento</td><td></td><td></td>
+          <td>Café da manhã</td><td>Café e Bar Novo Rio</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;25,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-i987wk">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-i987wk">🗑️</button></td></tr><tr><td>21</td><td>Petmax</td><td>Tue Jan 27</td>
+          <td>Evaristo Rafael Rodrigues</td><td></td><td></td>
+          <td>Combustível</td><td>MMC Auto Posto</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;105,73</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-hw7io4">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-hw7io4">🗑️</button></td></tr><tr><td>22</td><td>Petmax</td><td>Tue Jan 27</td>
+          <td>Evaristo Rafael Rodrigues</td><td></td><td></td>
+          <td>Refeição</td><td>Andrade Comercio</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;39,90</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-se4hpj">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-se4hpj">🗑️</button></td></tr><tr><td>23</td><td>Petmax</td><td>Mon Feb 02</td>
+          <td>Jaciel Melo Araujo</td><td></td><td></td>
+          <td>Refeição</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;41,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-mruurz">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-mruurz">🗑️</button></td></tr><tr><td>24</td><td>Petmax</td><td>Fri Feb 06</td>
+          <td>Leonardo Pederiva dos Santos</td><td></td><td></td>
+          <td>Combustível</td><td>Auto Posto Meneguetti</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;200,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-4jd7ah">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-4jd7ah">🗑️</button></td></tr><tr><td>25</td><td>Petmax</td><td>Tue Jan 27</td>
+          <td>Raimundo Lelis Boas</td><td></td><td></td>
+          <td>Transporte</td><td>Fabio Cabeça</td>
+          <td style="max-width:220px;word-break:break-word">Transporte São Luis x Pinheiro</td>
+          <td></td><td>R$&nbsp;260,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-0cyyuu">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-0cyyuu">🗑️</button></td></tr><tr><td>26</td><td>Petmax</td><td>Tue Feb 03</td>
+          <td>Raimundo Nonato Vieira Gonçalves</td><td></td><td></td>
+          <td>Café da manhã</td><td>Café e Bar Novo Rio</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;18,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-9r1zv1">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-9r1zv1">🗑️</button></td></tr><tr><td>27</td><td>Petmax</td><td>Mon Feb 02</td>
+          <td>Raimundo Nonato Vieira Gonçalves</td><td></td><td></td>
+          <td>Refeição</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;41,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-37arrq">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-37arrq">🗑️</button></td></tr><tr><td>28</td><td>Petmax</td><td>Mon Jan 26</td>
+          <td>Carlos Santos Furtados</td><td></td><td></td>
+          <td>Transporte</td><td>Paulinho Transportes</td>
+          <td style="max-width:220px;word-break:break-word">Trajeto Pinheiro X São Luis</td>
+          <td></td><td>R$&nbsp;110,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-wrnncu">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-wrnncu">🗑️</button></td></tr><tr><td>29</td><td>Petmax</td><td>Mon Jan 26</td>
+          <td>Carlos Santos Furtados</td><td></td><td></td>
+          <td>Transporte</td><td>Coopertaxi São Luis</td>
+          <td style="max-width:220px;word-break:break-word">Trajeto Anel Viario x Aeroporto</td>
+          <td></td><td>R$&nbsp;90,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-la565b">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-la565b">🗑️</button></td></tr><tr><td>30</td><td>Petmax</td><td>Mon Jan 26</td>
+          <td>Carlos Santos Furtados</td><td></td><td></td>
+          <td>Transporte</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Cujupe x Ponta de Espera</td>
+          <td></td><td>R$&nbsp;10,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-tgkxuq">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-tgkxuq">🗑️</button></td></tr><tr><td>31</td><td>Petmax</td><td>Sun Jan 25</td>
+          <td>Elenilton Ribeiro</td><td></td><td></td>
+          <td>Café da manhã</td><td>Manos Self Service</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;8,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-fllnl6">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-fllnl6">🗑️</button></td></tr><tr><td>32</td><td>Petmax</td><td>Mon Jan 26</td>
+          <td>Elenilton Ribeiro</td><td></td><td></td>
+          <td>Transporte</td><td>KJS Transporte</td>
+          <td style="max-width:220px;word-break:break-word">Mobilização Obra</td>
+          <td></td><td>R$&nbsp;100,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-h2n137">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-h2n137">🗑️</button></td></tr><tr><td>33</td><td>Petmax</td><td>Wed Jan 28</td>
+          <td>Victor Hugo dos Santos Macedo</td><td></td><td></td>
+          <td>Refeição</td><td>MC Delivery</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;51,30</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-nso58u">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-nso58u">🗑️</button></td></tr><tr><td>34</td><td>Granja Shida</td><td>Mon Jan 26</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>Rubens Grotto Cia Ltda</td>
+          <td style="max-width:220px;word-break:break-word"></td>
+          <td></td><td>R$&nbsp;70,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-0dzge1">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-0dzge1">🗑️</button></td></tr><tr><td>35</td><td>Granja Shida</td><td>Mon Feb 09</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>Zalafon</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;120,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-lqya0i">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-lqya0i">🗑️</button></td></tr><tr><td>36</td><td>Granja Shida</td><td>Fri Feb 13</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>STAR EAST</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;80,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-47lp3d">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-47lp3d">🗑️</button></td></tr><tr><td>37</td><td>Granja Shida</td><td>Mon Feb 16</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>Rubens Grotto Cia Ltda</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;50,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-a77y7z">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-a77y7z">🗑️</button></td></tr><tr><td>38</td><td>Granja Shida</td><td>Fri Feb 20</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>Posto Quepacia</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;150,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-e6493x">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-e6493x">🗑️</button></td></tr><tr><td>39</td><td>Granja Shida</td><td>Mon Mar 09</td>
+          <td>Carlos Antonio Candido Junior</td><td></td><td></td>
+          <td>Combustível</td><td>Rubens Grotto Cia Ltda</td>
+          <td style="max-width:220px;word-break:break-word">Combustivel referente a folga de campo</td>
+          <td></td><td>R$&nbsp;70,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-k6rtb4">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-k6rtb4">🗑️</button></td></tr><tr><td>40</td><td>Granja Shida</td><td>Thu Mar 05</td>
+          <td>Francisco Olegario Marques</td><td></td><td></td>
+          <td>Alimentação</td><td>Karina T. seuchu</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;60,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-y1w0rg">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-y1w0rg">🗑️</button></td></tr><tr><td>41</td><td>Granja Shida</td><td>Thu Mar 05</td>
+          <td>Francisco Olegario Marques</td><td></td><td></td>
+          <td>Alimentação</td><td>Lanchonete Suco da Fruta</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;34,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-3qaa7x">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-3qaa7x">🗑️</button></td></tr><tr><td>42</td><td>Granja Shida</td><td>Thu Mar 05</td>
+          <td>Francisco Olegario Marques</td><td></td><td></td>
+          <td>Alimentação</td><td>J. de Fatima dos Santos</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;45,90</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-p0bnqi">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-p0bnqi">🗑️</button></td></tr><tr><td>43</td><td>Granja Shida</td><td>Thu Feb 12</td>
+          <td>Genildo Batista de Medeiros</td><td></td><td></td>
+          <td>Alimentação</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;32,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-m5ebs0">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-m5ebs0">🗑️</button></td></tr><tr><td>44</td><td>Granja Shida</td><td>Sat Feb 07</td>
+          <td>Rafael de Moura</td><td></td><td></td>
+          <td>Combustível</td><td>LK de postos</td>
+          <td style="max-width:220px;word-break:break-word">Complemento de combustivel para devolver veiculo lcoado</td>
+          <td></td><td>R$&nbsp;73,44</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-hv0w0l">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-hv0w0l">🗑️</button></td></tr><tr><td>45</td><td>Granja Shida</td><td>Sun Jan 04</td>
+          <td>Silvio Alves Sena</td><td></td><td></td>
+          <td>Uber</td><td>Uber</td>
+          <td style="max-width:220px;word-break:break-word">Louveira X Campinas</td>
+          <td></td><td>R$&nbsp;83,99</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-84nd3t">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-84nd3t">🗑️</button></td></tr><tr><td>46</td><td>Granja Shida</td><td>Sun Jan 11</td>
+          <td>Silvio Alves Sena</td><td></td><td></td>
+          <td>Uber</td><td>Uber</td>
+          <td style="max-width:220px;word-break:break-word">Louveira X Campinas</td>
+          <td></td><td>R$&nbsp;73,98</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-yt1n2c">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-yt1n2c">🗑️</button></td></tr><tr><td>47</td><td>Granja Shida</td><td>Fri Feb 27</td>
+          <td>Silvio Alves Sena</td><td></td><td></td>
+          <td>Uber</td><td>Uber</td>
+          <td style="max-width:220px;word-break:break-word">Louveira X Campinas</td>
+          <td></td><td>R$&nbsp;88,98</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-xuaoku">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-xuaoku">🗑️</button></td></tr><tr><td>48</td><td>Granja Shida</td><td>Mon Mar 02</td>
+          <td>Silvio Alves Sena</td><td></td><td></td>
+          <td>Uber</td><td>Uber</td>
+          <td style="max-width:220px;word-break:break-word">Louveira X Campinas</td>
+          <td></td><td>R$&nbsp;97,98</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-je7upr">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-je7upr">🗑️</button></td></tr><tr><td>49</td><td>Premier Pet</td><td>Fri Mar 06</td>
+          <td>Valdinei Castorino Costa</td><td></td><td></td>
+          <td>Transporte</td><td>Taxi</td>
+          <td style="max-width:220px;word-break:break-word">Trajeto Telemaco X Imbau</td>
+          <td></td><td>R$&nbsp;70,00</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-zdl2cc">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-zdl2cc">🗑️</button></td></tr><tr><td>50</td><td>Premier Pet</td><td>Tue Mar 10</td>
+          <td>Valdinei Castorino Costa</td><td></td><td></td>
+          <td>Alimentação</td><td>Não encontrado</td>
+          <td style="max-width:220px;word-break:break-word">Refeição percurso de folga de campo</td>
+          <td></td><td>R$&nbsp;47,50</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="id-mn8tlkxj-zmpdnu">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="id-mn8tlkxj-zmpdnu">🗑️</button></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Se você quiser, depois eu também posso te converter isso para uma versão conectada ao Google Sheets, para atualização centralizada pela equipe.</div>
+
+  <script>
+    // =====================================================================
+    // VERSÃO COLABORATIVA — Google Sheets via Apps Script
+    // =====================================================================
+    const STORAGE_KEY = 'dashboard_reembolsos_editavel_v4';
+    const GAS_URL_KEY  = 'dashboard_reembolsos_gas_url';
+
+    const INITIAL_DATA = [{"Obra": "Premier Pet", "Data": "2026-03-17", "Colaborador": "Daniel Pederiva", "Motivo": "Transporte", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Taxi em folga de campo, Wellington e Jose Alves SJRP X SALES SP", "Valor": 220.0}, {"Obra": "CIT Uel ", "Data": "2026-02-21", "Colaborador": "Edson Dominciano Correa Filho", "Motivo": "Café da manhã", "Fornecedor": "Flor do Minho", "Observação (justificativa escrita no Formulario": "Café da manhã obra - sábado", "Valor": 42.06}, {"Obra": "Eletrofrio", "Data": "2026-02-28", "Colaborador": "Francivaldo Marques de Aguiar ", "Motivo": "Combustível", "Fornecedor": "Dias Auto Posto", "Observação (justificativa escrita no Formulario": "Abastecimento referente a folga de campo (carro empresa)", "Valor": 300.0}, {"Obra": "Eletrofrio", "Data": "2026-03-02", "Colaborador": "Francivaldo Marques de Aguiar ", "Motivo": "Combustível", "Fornecedor": "Lava Car do Farol", "Observação (justificativa escrita no Formulario": "Lava rápido (Carro empresa)", "Valor": 50.0}, {"Obra": "Eletrofrio", "Data": "2026-03-03", "Colaborador": "Francivaldo Marques de Aguiar ", "Motivo": "Combustível", "Fornecedor": "Petroreis", "Observação (justificativa escrita no Formulario": "Abastecimento referente a folga de campo (carro empresa)", "Valor": 150.0}, {"Obra": "Premier Pet", "Data": "2026-03-17", "Colaborador": "Carlos Gilberto Gomes ", "Motivo": "Combustível", "Fornecedor": "Posto Boeing Ltda", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 100.0}, {"Obra": "Eletrofrio", "Data": "2026-02-20", "Colaborador": "Leonardo Aparecido da Silva", "Motivo": "Pneu", "Fornecedor": "Borracharia e Auto Center Martins", "Observação (justificativa escrita no Formulario": "Concerto Pneu furado", "Valor": 25.0}, {"Obra": "Eletrofrio", "Data": "2026-02-22", "Colaborador": "Leonardo Aparecido da Silva", "Motivo": "Combustível", "Fornecedor": "Auto Posto Ecos", "Observação (justificativa escrita no Formulario": "Abastecimento referente a folga de campo (carro empresa)", "Valor": 231.69}, {"Obra": "Eletrofrio", "Data": "2026-03-02", "Colaborador": "Leonardo Aparecido da Silva", "Motivo": "Roupa de Cama", "Fornecedor": "Daju Ltda", "Observação (justificativa escrita no Formulario": "Compra de Roupa de cama para alojamento ", "Valor": 39.99}, {"Obra": "Eletrofrio", "Data": "2026-03-08", "Colaborador": "Leonardo Aparecido da Silva", "Motivo": "Pneu", "Fornecedor": "Eletrica Carlão Vulcanizadora", "Observação (justificativa escrita no Formulario": "Concerto Pneu furado", "Valor": 20.0}, {"Obra": "Premier Pet", "Data": "2026-02-27", "Colaborador": "Messias Francisco de Lima ", "Motivo": "Combustível", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 160.0}, {"Obra": "Premier Pet", "Data": "2026-03-03", "Colaborador": "Messias Francisco de Lima ", "Motivo": "Transporte", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Taxi em folga de campo, Ponta Grossa x Porto Amazonas", "Valor": 250.0}, {"Obra": "Klabin Lagoas", "Data": "2026-03-12", "Colaborador": "Marilene Santana ", "Motivo": "VT", "Fornecedor": "Viação Vinsa", "Observação (justificativa escrita no Formulario": "Despesa de custo de vale transporte", "Valor": 30.0}, {"Obra": "Petmax", "Data": "2025-12-20", "Colaborador": "Alexandre Luiz Nascimento ", "Motivo": "Combustível", "Fornecedor": "Auto Posto Jatay", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 150.0}, {"Obra": "Petmax", "Data": "2026-02-18", "Colaborador": "Sidnei Silva de Souza", "Motivo": "Refeição", "Fornecedor": "Restaurante Gaucho Gente Boa ", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 35.0}, {"Obra": "Petmax", "Data": "2026-02-06", "Colaborador": "Allan Rodrigo Cunha", "Motivo": "Combustível", "Fornecedor": "Auto Posto Moreirão", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 150.06}, {"Obra": "Petmax", "Data": "2026-02-09", "Colaborador": "Allan Rodrigo Cunha", "Motivo": "Combustível", "Fornecedor": "Auto Posto Moreirão", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 200.0}, {"Obra": "Petmax", "Data": "2026-02-02", "Colaborador": "Daniel Lima Nascimento", "Motivo": "Refeição", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 41.0}, {"Obra": "Petmax", "Data": "2026-02-02", "Colaborador": "Daniel Lima Nascimento", "Motivo": "Uber", "Fornecedor": "Uber", "Observação (justificativa escrita no Formulario": "Trajeto Telemaco X Imbau", "Valor": 70.0}, {"Obra": "Petmax", "Data": "2026-02-03", "Colaborador": "Daniel Lima Nascimento", "Motivo": "Café da manhã", "Fornecedor": "Café e Bar Novo Rio", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 25.0}, {"Obra": "Petmax", "Data": "2026-01-27", "Colaborador": "Evaristo Rafael Rodrigues ", "Motivo": "Combustível", "Fornecedor": "MMC Auto Posto", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 105.73}, {"Obra": "Petmax", "Data": "2026-01-27", "Colaborador": "Evaristo Rafael Rodrigues ", "Motivo": "Refeição", "Fornecedor": "Andrade Comercio ", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 39.9}, {"Obra": "Petmax", "Data": "2026-02-02", "Colaborador": "Jaciel Melo Araujo", "Motivo": "Refeição", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 41.0}, {"Obra": "Petmax", "Data": "2026-02-06", "Colaborador": "Leonardo Pederiva dos Santos ", "Motivo": "Combustível", "Fornecedor": "Auto Posto Meneguetti", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 200.0}, {"Obra": "Petmax", "Data": "2026-01-27", "Colaborador": "Raimundo Lelis Boas ", "Motivo": "Transporte", "Fornecedor": "Fabio Cabeça", "Observação (justificativa escrita no Formulario": "Transporte São Luis x Pinheiro ", "Valor": 260.0}, {"Obra": "Petmax", "Data": "2026-02-03", "Colaborador": "Raimundo Nonato Vieira Gonçalves ", "Motivo": "Café da manhã", "Fornecedor": "Café e Bar Novo Rio", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 18.0}, {"Obra": "Petmax", "Data": "2026-02-02", "Colaborador": "Raimundo Nonato Vieira Gonçalves ", "Motivo": "Refeição", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 41.0}, {"Obra": "Petmax", "Data": "2026-01-26", "Colaborador": "Carlos Santos Furtados ", "Motivo": "Transporte", "Fornecedor": "Paulinho Transportes", "Observação (justificativa escrita no Formulario": "Trajeto Pinheiro X São Luis", "Valor": 110.0}, {"Obra": "Petmax", "Data": "2026-01-26", "Colaborador": "Carlos Santos Furtados ", "Motivo": "Transporte", "Fornecedor": "Coopertaxi São Luis", "Observação (justificativa escrita no Formulario": "Trajeto Anel Viario x Aeroporto", "Valor": 90.0}, {"Obra": "Petmax", "Data": "2026-01-26", "Colaborador": "Carlos Santos Furtados ", "Motivo": "Transporte", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Cujupe x Ponta de Espera", "Valor": 10.0}, {"Obra": "Petmax", "Data": "2026-01-25", "Colaborador": "Elenilton Ribeiro", "Motivo": "Café da manhã", "Fornecedor": "Manos Self Service", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 8.0}, {"Obra": "Petmax", "Data": "2026-01-26", "Colaborador": "Elenilton Ribeiro", "Motivo": "Transporte", "Fornecedor": "KJS Transporte", "Observação (justificativa escrita no Formulario": "Mobilização Obra", "Valor": 100.0}, {"Obra": "Petmax", "Data": "2026-01-28", "Colaborador": "Victor Hugo dos Santos Macedo", "Motivo": "Refeição", "Fornecedor": "MC Delivery", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 51.3}, {"Obra": "Granja Shida", "Data": "2026-01-26", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "Rubens Grotto Cia Ltda", "Observação (justificativa escrita no Formulario": "", "Valor": 70.0}, {"Obra": "Granja Shida", "Data": "2026-02-09", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "Zalafon", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 120.0}, {"Obra": "Granja Shida", "Data": "2026-02-13", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "STAR EAST", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 80.0}, {"Obra": "Granja Shida", "Data": "2026-02-16", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "Rubens Grotto Cia Ltda", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 50.0}, {"Obra": "Granja Shida", "Data": "2026-02-20", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "Posto Quepacia", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 150.0}, {"Obra": "Granja Shida", "Data": "2026-03-09", "Colaborador": "Carlos Antonio Candido Junior", "Motivo": "Combustível", "Fornecedor": "Rubens Grotto Cia Ltda", "Observação (justificativa escrita no Formulario": "Combustivel referente a folga de campo", "Valor": 70.0}, {"Obra": "Granja Shida", "Data": "2026-03-05", "Colaborador": "Francisco Olegario Marques ", "Motivo": "Alimentação", "Fornecedor": "Karina T. seuchu", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 60.0}, {"Obra": "Granja Shida", "Data": "2026-03-05", "Colaborador": "Francisco Olegario Marques ", "Motivo": "Alimentação", "Fornecedor": "Lanchonete Suco da Fruta", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 34.0}, {"Obra": "Granja Shida", "Data": "2026-03-05", "Colaborador": "Francisco Olegario Marques ", "Motivo": "Alimentação", "Fornecedor": "J. de Fatima dos Santos", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 45.9}, {"Obra": "Granja Shida", "Data": "2026-02-12", "Colaborador": "Genildo Batista de Medeiros ", "Motivo": "Alimentação", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 32.0}, {"Obra": "Granja Shida", "Data": "2026-02-07", "Colaborador": "Rafael de Moura ", "Motivo": "Combustível", "Fornecedor": "LK de postos", "Observação (justificativa escrita no Formulario": "Complemento de combustivel para devolver veiculo lcoado ", "Valor": 73.44}, {"Obra": "Granja Shida", "Data": "2026-01-04", "Colaborador": "Silvio Alves Sena ", "Motivo": "Uber", "Fornecedor": "Uber", "Observação (justificativa escrita no Formulario": "Louveira X Campinas", "Valor": 83.99}, {"Obra": "Granja Shida", "Data": "2026-01-11", "Colaborador": "Silvio Alves Sena ", "Motivo": "Uber", "Fornecedor": "Uber", "Observação (justificativa escrita no Formulario": "Louveira X Campinas", "Valor": 73.98}, {"Obra": "Granja Shida", "Data": "2026-02-27", "Colaborador": "Silvio Alves Sena ", "Motivo": "Uber", "Fornecedor": "Uber", "Observação (justificativa escrita no Formulario": "Louveira X Campinas", "Valor": 88.98}, {"Obra": "Granja Shida", "Data": "2026-03-02", "Colaborador": "Silvio Alves Sena ", "Motivo": "Uber", "Fornecedor": "Uber", "Observação (justificativa escrita no Formulario": "Louveira X Campinas", "Valor": 97.98}, {"Obra": "Premier Pet", "Data": "2026-03-06", "Colaborador": "Valdinei Castorino Costa", "Motivo": "Transporte", "Fornecedor": "Taxi", "Observação (justificativa escrita no Formulario": "Trajeto Telemaco X Imbau", "Valor": 70.0}, {"Obra": "Premier Pet", "Data": "2026-03-10", "Colaborador": "Valdinei Castorino Costa", "Motivo": "Alimentação", "Fornecedor": "Não encontrado", "Observação (justificativa escrita no Formulario": "Refeição percurso de folga de campo", "Valor": 47.5}];
+
+    let editingId  = null;
+    let gasUrl     = localStorage.getItem(GAS_URL_KEY) || '';
+    let isSyncing  = false;
+    let chartObras, chartMotivos, chartEvolucao, chartColabs;
+    let autoRefreshTimer = null;
+
+    function generateId() { return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); }
+    function normalizeText(v) { return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim(); }
+    function normalizeYesNo(v) {
+      const s = normalizeText(v);
+      if (!s) return '';
+      if (['sim','s','yes','y','true','1'].includes(s)) return 'Sim';
+      if (['nao','não','n','no','false','0'].includes(s)) return 'Não';
+      return String(v||'').trim();
+    }
+    function normalizeRow(row) {
+      return {
+        __id: row.__id || generateId(),
+        Obra: String(row.Obra || row['Obra '] || '').trim(),
+        Data: String(row.Data || row['Data '] || '').slice(0,10),
+        Colaborador: String(row.Colaborador || '').trim(),
+        Matricula: String(row.Matricula || row['Matrícula'] || row.Matrícula || row['Matrícula '] || '').trim(),
+        Funcao: String(row.Funcao || row['Função'] || row.Função || row['Função '] || '').trim(),
+        Motivo: String(row.Motivo || row.Tipo || '').trim(),
+        Fornecedor: String(row.Fornecedor || row['Fornecedor '] || '').trim(),
+        'Observação (justificativa escrita no Formulario': String(row['Observação (justificativa escrita no Formulario'] || row.Observacao || row.Observação || '').trim(),
+        ReembolsoAntecipado: normalizeYesNo(row.ReembolsoAntecipado || row['Solicitado antecipadamente?'] || row['Solicitado antecipadamente'] || row['Reembolso antecipado'] || row.Antecipado || ''),
+        Valor: Number(row.Valor || 0)
+      };
+    }
+
+    let rawData = (JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || structuredClone(INITIAL_DATA)).map(normalizeRow);
+    const COLORS = ['#3b82f6','#a78bfa','#f472b6','#34d399','#f59e0b','#22d3ee','#fb923c','#84cc16','#f43f5e','#38bdf8'];
+
+    const els = {
+      searchInput: document.getElementById('searchInput'),
+      filterObra: document.getElementById('filterObra'),
+      filterMotivo: document.getElementById('filterMotivo'),
+      filterColaborador: document.getElementById('filterColaborador'),
+      fileInput: document.getElementById('fileInput'),
+      statusBase: document.getElementById('statusBase'),
+      syncStatus: document.getElementById('syncStatus'),
+      tbody: document.getElementById('tbody'),
+      kpiTotal: document.getElementById('kpiTotal'), kpiTotalSub: document.getElementById('kpiTotalSub'),
+      kpiObra: document.getElementById('kpiObra'), kpiObraSub: document.getElementById('kpiObraSub'),
+      kpiMotivo: document.getElementById('kpiMotivo'), kpiMotivoSub: document.getElementById('kpiMotivoSub'),
+      kpiTicket: document.getElementById('kpiTicket'), editHint: document.getElementById('editHint'),
+      fObra: document.getElementById('fObra'), fData: document.getElementById('fData'),
+      fColaborador: document.getElementById('fColaborador'), fMatricula: document.getElementById('fMatricula'),
+      fFuncao: document.getElementById('fFuncao'), fMotivo: document.getElementById('fMotivo'),
+      fFornecedor: document.getElementById('fFornecedor'), fObs: document.getElementById('fObs'),
+      fAntecipado: document.getElementById('fAntecipado'), fValor: document.getElementById('fValor')
+    };
+
+    function money(v) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+
+    // ---- Sync Cloud --------------------------------------------------
+    function setSyncStatus(msg, color) {
+      const el = els.syncStatus;
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = color || '#94a3b8';
+    }
+    async function gasGet() {
+      if (!gasUrl) return null;
+      const res = await fetch(gasUrl + '?action=getAll');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error || 'Erro');
+      return j.data;
+    }
+    async function gasPost(payload) {
+      if (!gasUrl) return;
+      const res = await fetch(gasUrl, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(payload) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      if (!j.ok) throw new Error(j.error || 'Erro');
+      return j;
+    }
+    async function syncFromCloud() {
+      if (!gasUrl || isSyncing) return;
+      isSyncing = true;
+      setSyncStatus('🔄 Sincronizando…', '#f59e0b');
+      try {
+        const d = await gasGet();
+        if (d && Array.isArray(d)) {
+          rawData = d.map(normalizeRow);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(rawData));
+          renderAll();
+          setSyncStatus('✅ Sincronizado — ' + new Date().toLocaleTimeString('pt-BR'), '#22c55e');
+        }
+      } catch(err) { setSyncStatus('⚠️ Offline (dados locais): ' + err.message.slice(0,40), '#f43f5e'); }
+      finally { isSyncing = false; }
+    }
+    function startAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      if (!gasUrl) return;
+      autoRefreshTimer = setInterval(syncFromCloud, 30000);
+    }
+
+    // ---- Persist ------------------------------------------------------
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rawData));
+      els.statusBase.textContent = `Base ativa: ${rawData.length} lançamentos`;
+    }
+    function aggregate(list, key) {
+      const map = new Map();
+      list.forEach(r => {
+        const k = r[key] || 'Não informado';
+        if (!map.has(k)) map.set(k, { total: 0, qtd: 0 });
+        const item = map.get(k);
+        item.total += Number(r.Valor||0); item.qtd += 1;
+      });
+      return [...map.entries()].sort((a,b) => b[1].total - a[1].total);
+    }
+    function filteredData() {
+      const q = normalizeText(els.searchInput.value);
+      const obra = els.filterObra.value, motivo = els.filterMotivo.value, colab = els.filterColaborador.value;
+      return rawData.filter(r => {
+        if (obra && r.Obra !== obra) return false;
+        if (motivo && r.Motivo !== motivo) return false;
+        if (colab && r.Colaborador !== colab) return false;
+        if (q) {
+          const hay = normalizeText([r.Obra,r.Colaborador,r.Motivo,r.Fornecedor,r['Observação (justificativa escrita no Formulario']].join(' '));
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+    function populateFilters() {
+      function fillSelect(el, values) {
+        const cur = el.value;
+        el.innerHTML = '<option value="">Todos</option>';
+        [...new Set(values.filter(Boolean).sort())].forEach(v => {
+          const o = document.createElement('option'); o.value = v; o.textContent = v; el.appendChild(o);
+        });
+        el.value = cur;
+      }
+      fillSelect(els.filterObra, rawData.map(r=>r.Obra));
+      fillSelect(els.filterMotivo, rawData.map(r=>r.Motivo));
+      fillSelect(els.filterColaborador, rawData.map(r=>r.Colaborador));
+    }
+
+    // ---- Render -------------------------------------------------------
+    function renderAll() {
+      populateFilters();
+      const data = filteredData();
+      const total = data.reduce((s,r) => s+Number(r.Valor||0), 0);
+      els.kpiTotal.textContent = money(total);
+      els.kpiTotalSub.textContent = `${data.length} lançamentos filtrados`;
+      const byObra = aggregate(data,'Obra'); const obraLeader = byObra[0];
+      els.kpiObra.textContent = obraLeader ? obraLeader[0] : '-';
+      els.kpiObraSub.textContent = obraLeader ? `${money(obraLeader[1].total)} · ${obraLeader[1].qtd} lançamentos` : '-';
+      const byMotivo = aggregate(data,'Motivo'); const motivoLeader = byMotivo[0];
+      els.kpiMotivo.textContent = motivoLeader ? motivoLeader[0] : '-';
+      els.kpiMotivoSub.textContent = motivoLeader ? `${money(motivoLeader[1].total)} · ${motivoLeader[1].qtd} lançamentos` : '-';
+      els.kpiTicket.textContent = money(data.length ? total/data.length : 0);
+      renderTable(data); renderCharts(data);
+      els.statusBase.textContent = `Base ativa: ${rawData.length} lançamentos`;
+    }
+    function renderTable(data) {
+      els.tbody.innerHTML = '';
+      data.forEach((r,i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${r.Obra||''}</td><td>${r.Data||''}</td>
+          <td>${r.Colaborador||''}</td><td>${r.Matricula||''}</td><td>${r.Funcao||''}</td>
+          <td>${r.Motivo||''}</td><td>${r.Fornecedor||''}</td>
+          <td style="max-width:220px;word-break:break-word">${r['Observação (justificativa escrita no Formulario']||''}</td>
+          <td>${r.ReembolsoAntecipado||''}</td><td>${money(r.Valor)}</td>
+          <td><button class="btn-sm btn-edit" data-action="edit" data-id="${r.__id}">✏️</button>
+              <button class="btn-sm btn-del" data-action="delete" data-id="${r.__id}">🗑️</button></td>`;
+        els.tbody.appendChild(tr);
+      });
+    }
+    function renderCharts(data) {
+      const byObra=aggregate(data,'Obra').slice(0,10), byMotivo=aggregate(data,'Motivo').slice(0,10), byColab=aggregate(data,'Colaborador').slice(0,10);
+      function upd(chart, labels, values, colors) {
+        chart.data.labels=labels; chart.data.datasets[0].data=values;
+        chart.data.datasets[0].backgroundColor=colors||COLORS.slice(0,labels.length); chart.update();
+      }
+      if(chartObras) upd(chartObras, byObra.map(x=>x[0]), byObra.map(x=>x[1].total));
+      if(chartMotivos) upd(chartMotivos, byMotivo.map(x=>x[0]), byMotivo.map(x=>x[1].total), COLORS.slice(0,byMotivo.length));
+      if(chartColabs) upd(chartColabs, byColab.map(x=>x[0]), byColab.map(x=>x[1].total));
+      const monthly=new Map();
+      data.forEach(r => { const m=(r.Data||'').slice(0,7); if(m){if(!monthly.has(m))monthly.set(m,0); monthly.set(m,monthly.get(m)+Number(r.Valor||0));} });
+      const sortedM=[...monthly.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+      if(chartEvolucao){chartEvolucao.data.labels=sortedM.map(x=>x[0]); chartEvolucao.data.datasets[0].data=sortedM.map(x=>x[1]); chartEvolucao.update();}
+    }
+
+    // ---- Form --------------------------------------------------------
+    function clearForm() {
+      editingId=null;
+      ['fObra','fData','fColaborador','fMatricula','fFuncao','fMotivo','fFornecedor','fObs','fAntecipado','fValor'].forEach(k=>els[k].value='');
+      els.editHint.style.display='none';
+    }
+    function loadToForm(id) {
+      const r=rawData.find(x=>x.__id===id); if(!r) return;
+      editingId=id;
+      els.fObra.value=r.Obra||''; els.fData.value=r.Data||''; els.fColaborador.value=r.Colaborador||'';
+      els.fMatricula.value=r.Matricula||''; els.fFuncao.value=r.Funcao||''; els.fMotivo.value=r.Motivo||'';
+      els.fFornecedor.value=r.Fornecedor||''; els.fObs.value=r['Observação (justificativa escrita no Formulario']||'';
+      els.fAntecipado.value=r.ReembolsoAntecipado||''; els.fValor.value=r.Valor||'';
+      els.editHint.style.display=''; els.fObra.focus();
+    }
+    function readForm() {
+      return normalizeRow({
+        __id: editingId||generateId(), Obra: els.fObra.value, Data: els.fData.value,
+        Colaborador: els.fColaborador.value, Matricula: els.fMatricula.value, Funcao: els.fFuncao.value,
+        Motivo: els.fMotivo.value, Fornecedor: els.fFornecedor.value,
+        'Observação (justificativa escrita no Formulario': els.fObs.value,
+        ReembolsoAntecipado: els.fAntecipado.value, Valor: els.fValor.value
+      });
+    }
+    async function saveForm() {
+      const row=readForm();
+      if(!row.Obra||!row.Data||!row.Colaborador||!row.Motivo||!row.Valor){
+        alert('Preencha pelo menos Obra, Data, Colaborador, Motivo e Valor.'); return;
+      }
+      const isNew = editingId===null;
+      if(isNew) { rawData.unshift(row); }
+      else { const idx=rawData.findIndex(x=>x.__id===editingId); if(idx>=0) rawData[idx]={...row,__id:editingId}; }
+      persist(); clearForm(); renderAll();
+      if(gasUrl){
+        setSyncStatus('🔄 Salvando na nuvem…','#f59e0b');
+        try { await gasPost({action: isNew?'add':'update', row:row}); setSyncStatus('✅ Salvo na nuvem — '+new Date().toLocaleTimeString('pt-BR'),'#22c55e'); }
+        catch(err){setSyncStatus('⚠️ Salvo localmente (nuvem falhou): '+err.message.slice(0,50),'#f59e0b');}
+      }
+    }
+    async function deleteRow(id) {
+      if(!confirm('Deseja realmente excluir este lançamento?')) return;
+      rawData=rawData.filter(x=>x.__id!==id);
+      persist(); clearForm(); renderAll();
+      if(gasUrl){
+        setSyncStatus('🔄 Removendo da nuvem…','#f59e0b');
+        try{await gasPost({action:'delete',id:id}); setSyncStatus('✅ Removido da nuvem — '+new Date().toLocaleTimeString('pt-BR'),'#22c55e');}
+        catch(err){setSyncStatus('⚠️ Removido localmente (nuvem falhou)','#f59e0b');}
+      }
+    }
+
+    // ---- Import/Export -----------------------------------------------
+    function parseBrazilNumber(v) {
+      if(typeof v==='number') return v;
+      const s=String(v||'').trim(); if(!s) return 0;
+      return Number(s.replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+    }
+    function formatExcelDate(v) {
+      if(!v) return '';
+      if(typeof v==='number'){const o=XLSX.SSF.parse_date_code(v);if(!o)return'';return`${o.y}-${String(o.m).padStart(2,'0')}-${String(o.d).padStart(2,'0')}`;}
+      const s=String(v).trim();
+      if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+      if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){const[d,m,y]=s.split('/');return`${y}-${m}-${d}`;}
+      const dt=new Date(s);
+      if(!isNaN(dt)) return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10);
+      return s.slice(0,10);
+    }
+    function importWorkbook(file) {
+      const reader=new FileReader();
+      reader.onload=async e=>{
+        try{
+          const data=new Uint8Array(e.target.result);
+          const wb=XLSX.read(data,{type:'array'});
+          const sheets=wb.SheetNames.map(name=>({name,rows:XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:''})}));
+          const chosen=sheets.find(s=>s.rows.some(r=>{const keys=Object.keys(r).map(normalizeText);return keys.some(k=>k.includes('obra'))&&keys.some(k=>k.includes('colaborador'));}));
+          if(!chosen){alert('Não consegui ler esse arquivo. Verifique se alguma aba contém colunas como Obra, Data, Colaborador, Matrícula, Função, Motivo, Fornecedor, Observação, Solicitado antecipadamente e Valor.');return;}
+          const mapped=chosen.rows.map(r=>normalizeRow({
+            Obra:r.Obra||r['Obra ']||r.obra||'', Data:formatExcelDate(r.Data||r['Data ']||r.data||''),
+            Colaborador:r.Colaborador||r.colaborador||'', Matricula:r.Matricula||r['Matrícula']||r.Matrícula||'',
+            Funcao:r.Funcao||r['Função']||r.Função||'', Motivo:r.Motivo||r.motivo||r.Tipo||'',
+            Fornecedor:r.Fornecedor||r['Fornecedor ']||'',
+            'Observação (justificativa escrita no Formulario':r['Observação (justificativa escrita no Formulario']||r.Observacao||r.Observação||r['Observação']||'',
+            ReembolsoAntecipado:r['Solicitado antecipadamente?']||r['Solicitado antecipadamente']||r.ReembolsoAntecipado||r.Antecipado||'',
+            Valor:parseBrazilNumber(r.Valor||r.valor||0)
+          }));
+          if(!confirm(`Importar ${mapped.length} registros da aba "${chosen.name}"? Isso vai SUBSTITUIR todos os dados atuais.`)) return;
+          rawData=mapped; persist(); renderAll();
+          if(gasUrl){
+            setSyncStatus('🔄 Enviando para a nuvem…','#f59e0b');
+            try{await gasPost({action:'replaceAll',rows:rawData}); setSyncStatus('✅ Importação enviada — '+new Date().toLocaleTimeString('pt-BR'),'#22c55e');}
+            catch(err){setSyncStatus('⚠️ Importado localmente (nuvem falhou): '+err.message.slice(0,50),'#f59e0b');}
+          }
+        }catch(err){alert('Erro ao importar: '+err.message);}
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    function exportCsv() {
+      const data=filteredData();
+      const h=['Obra','Data','Colaborador','Matricula','Funcao','Motivo','Fornecedor','Observacao','ReembolsoAntecipado','Valor'];
+      const rows=[h,...data.map(r=>[r.Obra,r.Data,r.Colaborador,r.Matricula,r.Funcao,r.Motivo,r.Fornecedor,r['Observação (justificativa escrita no Formulario'],r.ReembolsoAntecipado,r.Valor])];
+      const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='reembolsos_filtrados.csv'; a.click();
+    }
+
+    // ---- Config Modal ------------------------------------------------
+    function openConfigModal(){document.getElementById('modalConfig').style.display='flex'; document.getElementById('inputGasUrl').value=gasUrl;}
+    function closeConfigModal(){document.getElementById('modalConfig').style.display='none';}
+    async function saveConfig(){
+      const url=document.getElementById('inputGasUrl').value.trim();
+      gasUrl=url; localStorage.setItem(GAS_URL_KEY,url); closeConfigModal();
+      if(url){
+        setSyncStatus('🔄 Conectando…','#f59e0b');
+        try{
+          const d=await gasGet();
+          if(d&&d.length>0){
+            if(confirm(`A nuvem já tem ${d.length} lançamentos. Clique OK para BAIXAR da nuvem, ou Cancelar para ENVIAR seus dados locais.`)){
+              rawData=d.map(normalizeRow); persist(); renderAll(); setSyncStatus('✅ Dados carregados da nuvem!','#22c55e');
+            }else{
+              await gasPost({action:'replaceAll',rows:rawData}); setSyncStatus('✅ Dados locais enviados para a nuvem!','#22c55e');
+            }
+          }else{
+            await gasPost({action:'replaceAll',rows:rawData}); setSyncStatus('✅ '+rawData.length+' registros enviados para a nuvem!','#22c55e');
+          }
+          startAutoRefresh();
+        }catch(err){setSyncStatus('❌ Erro ao conectar: '+err.message.slice(0,60),'#f43f5e');}
+      }else{
+        setSyncStatus('⚠️ Modo offline (sem URL configurada)','#94a3b8');
+        if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+      }
+    }
+
+    // ---- Init Charts --------------------------------------------------
+    function initCharts(){
+      const baseBar=(ctx,label)=>new Chart(ctx,{
+        type:'bar', data:{labels:[],datasets:[{label,data:[],backgroundColor:COLORS}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{ticks:{color:'#94a3b8',maxRotation:30},grid:{color:'#334155'}},
+            y:{ticks:{color:'#94a3b8',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},grid:{color:'#334155'}}}}
+      });
+      chartObras=baseBar(document.getElementById('chartObras').getContext('2d'),'Total por Obra (R$)');
+      chartColabs=baseBar(document.getElementById('chartColabs').getContext('2d'),'Top Colaboradores (R$)');
+      chartMotivos=new Chart(document.getElementById('chartMotivos').getContext('2d'),{
+        type:'doughnut', data:{labels:[],datasets:[{data:[],backgroundColor:COLORS}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#e2e8f0',font:{size:11}}}}}
+      });
+      chartEvolucao=new Chart(document.getElementById('chartEvolucao').getContext('2d'),{
+        type:'line', data:{labels:[],datasets:[{label:'Evolução Mensal (R$)',data:[],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.15)',fill:true,tension:.35}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#334155'}},
+            y:{ticks:{color:'#94a3b8',callback:v=>'R$'+Number(v).toLocaleString('pt-BR')},grid:{color:'#334155'}}}}
+      });
+    }
+
+    // ---- Bootstrap ---------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      initCharts(); renderAll();
+      document.getElementById('btnSalvar').addEventListener('click', saveForm);
+      document.getElementById('btnNovo').addEventListener('click', clearForm);
+      document.getElementById('btnExportCsv').addEventListener('click', exportCsv);
+      document.getElementById('btnConfigurar').addEventListener('click', openConfigModal);
+      document.getElementById('btnFecharModal').addEventListener('click', closeConfigModal);
+      document.getElementById('btnSalvarConfig').addEventListener('click', saveConfig);
+      document.getElementById('btnSincronizar').addEventListener('click', syncFromCloud);
+      document.getElementById('btnReset').addEventListener('click', async()=>{
+        if(!confirm('Deseja restaurar a base inicial do arquivo original?')) return;
+        rawData=structuredClone(INITIAL_DATA).map(normalizeRow);
+        localStorage.removeItem(STORAGE_KEY); clearForm(); renderAll();
+        if(gasUrl){try{await gasPost({action:'replaceAll',rows:rawData});}catch(e){}}
+      });
+      ['searchInput','filterObra','filterMotivo','filterColaborador'].forEach(id=>document.getElementById(id).addEventListener('input',renderAll));
+      ['filterObra','filterMotivo','filterColaborador'].forEach(id=>document.getElementById(id).addEventListener('change',renderAll));
+      els.fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)importWorkbook(f);});
+      els.tbody.addEventListener('click',e=>{
+        const btn=e.target.closest('button[data-action]'); if(!btn) return;
+        if(btn.dataset.action==='edit') loadToForm(btn.dataset.id);
+        if(btn.dataset.action==='delete') deleteRow(btn.dataset.id);
+      });
+      document.getElementById('modalConfig').addEventListener('click',e=>{
+        if(e.target===document.getElementById('modalConfig')) closeConfigModal();
+      });
+      if(gasUrl){setSyncStatus('🔄 Carregando dados da nuvem…','#f59e0b'); syncFromCloud().then(()=>startAutoRefresh());}
+      else{setSyncStatus('⚙️ Clique em "Configurar Nuvem" para compartilhar com sua equipe','#94a3b8');}
+    });
+  </script>
+
+
+</body></html>
